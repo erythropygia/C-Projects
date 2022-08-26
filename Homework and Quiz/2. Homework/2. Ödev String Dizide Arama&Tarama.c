@@ -1,0 +1,78 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+static int indis=1;
+int hesapla(char girilenkelime[10], int uzunluk);
+int main(){
+	
+	char list [10][10]= {"elmas","ayak","makas","eldiven","telefon","terlik","kaset","plak","pil","kafes"};	
+	int i,sonuc,puan=0,enbuyuk=0;
+    char girilenkelime[10];
+	printf("Dizideki Stringlerle Karsilastirma Icin Kelime Giriniz:");
+	scanf("%s",&girilenkelime);
+	for(i=0;i<10;i++){
+		puan=hesapla(girilenkelime, i);
+		if(enbuyuk<puan){
+			enbuyuk=puan;
+			sonuc=i;	
+		}
+	}
+	printf("En Fazla Benzesme %s Kelimesi, Kelime %d. Indistedir \n ",list[sonuc],sonuc+1);
+
+}
+
+int hesapla(char girilenkelime[10], int uzunluk){
+	int kosul3=0,kosul2=0,kosul1=0,toplampuan=0;
+	char list [10][10]= {"elmas","ayak","makas","eldiven","telefon","terlik","kaset","plak","pil","kafes"};	//diziyi tekrar kontrol edebilmek için tekrar tanýmladým.
+	int i,j;
+	for (i=0; i<10; i++){
+		if(list[uzunluk][i]=='\0'){
+			break;
+		}
+	}
+	int uzunluk1=i;	
+	for(i=0; i<10; i++){
+		if(girilenkelime[i]=='\0'){
+			break;
+		}
+	}
+	int uzunluk2=i;
+	
+	for (i=0; i<uzunluk1; i++){
+		for(j=0; j<uzunluk2;j++){
+			if (list[uzunluk][i]==girilenkelime[j] && i==j){
+				kosul3+=3;
+			}
+		}
+	}
+	
+	for (i=0; i<uzunluk1; i++){
+		for(j=0; j<uzunluk2; j++){
+			if (list[uzunluk][i]==girilenkelime[j] && (i==j-1 || i==j+1)){
+				kosul2+=2;
+			}
+		}
+	}
+	
+	for(i=0; i<uzunluk1; i++){
+		for(j=0; j<uzunluk2; j++){
+			
+			if (list[uzunluk][i]==girilenkelime[j] && (i==j-1 || i==j+1)){
+				continue;			
+			}
+			else if (list[uzunluk][i]==girilenkelime[j] && i==j){
+				continue;
+			}
+			if (list[uzunluk][i]==girilenkelime[j]){
+				kosul1++;
+			}
+		
+		}	
+	}
+	
+	toplampuan=kosul3+kosul2+kosul1;
+	
+	printf("%d.Indisin Benzerlik Puani: %d\n",indis,toplampuan);
+    indis++;
+	return toplampuan;
+}

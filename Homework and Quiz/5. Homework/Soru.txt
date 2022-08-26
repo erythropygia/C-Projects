@@ -1,0 +1,13 @@
+a) Bu fonksiyonu veya kendi yazacağınız fonksiyonu kullanarak 15 adet, 6 karakter uzunluğunda string değer ve 20 ile 100 arasında ID değeri oluşturarak, bu değerleri sıralı erişimli bir dosyaya kayıt ediniz.
+
+Id ve string değerleri aşağıdaki gibi olacaktır…
+
+45 semred
+
+67 amidad
+
+75 senided ….
+
+b) Verilerinizi öncelikle Id değerine göre sıralayınız sıralanmış halini ayrı bir dosyaya yazınız ve dosyayı okuyarak ekrana listeleyiniz.
+
+c) Verilerinizi string değerlerine alfabetik olarak sıralayınız ve sıralanmış halini ayrı bir dosyaya yazınız ve dosyayı okuyarak ekrana listeleyiniz.
