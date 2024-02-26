@@ -7,107 +7,91 @@
 #include <sys/wait.h>
 #include <semaphore.h>
 #include <fcntl.h>
-#define semName "sem"
 
-int *sayilar;
-sem_t bitis;
-int aha;
+#define SEM_NAME "semaphore"
+
+int *numbers;
+sem_t finish_sem;
+int shared_index;
 
 void* create_shared_memory(size_t size) {
+    int protection = PROT_READ | PROT_WRITE;
+    int visibility = MAP_SHARED | MAP_ANONYMOUS;
 
-  int protection = PROT_READ | PROT_WRITE;
-  int visibility = MAP_SHARED | MAP_ANONYMOUS;
-
-  return mmap(NULL, size, protection, visibility, -1, 0);
+    return mmap(NULL, size, protection, visibility, -1, 0);
 }
 
-int main(int argc,char* argv[]){
-
-	int k = atoi(argv[1]);
-	int n = atoi(argv[2]);
-	int dosya = argc - 3;
-    int i,deger,index[1];
+int main(int argc, char* argv[]) {
+    int k = atoi(argv[1]);
+    int n = atoi(argv[2]);
+    int files = argc - 3;
+    int i, value, index[1];
     index[0] = 0;
-    int *dizi;
-    sem_init(&bitis,n,0);
-    dizi = (int*)malloc(k*sizeof(int)*n);
-    sem_t *sem_id = sem_open(semName, O_CREAT, 0644, 2);
-	void *shared_memory = create_shared_memory(k*sizeof(int));
-    void *p = create_shared_memory(4);
-    memcpy(p,index,4);
-	for(i = 0;i < n;i++){
+    int *array;
+    sem_init(&finish_sem, 1, 0);
+    array = (int*)malloc(k * sizeof(int) * n);
+    sem_t *sem_id = sem_open(SEM_NAME, O_CREAT, 0644, 2);
+    void *shared_memory = create_shared_memory(k * sizeof(int));
+    void *index_memory = create_shared_memory(sizeof(int));
+    memcpy(index_memory, index, sizeof(int));
 
-	    int pid = fork();
+    for (i = 0; i < n; i++) {
+        int pid = fork();
 
-	    if(pid == 0){
+        if (pid == 0) {
+            int smallest, buffer, size, current_index = 0;
+            numbers = (int*)malloc(k * sizeof(int));
+            numbers[0] = 0;
+            sem_t *sem_id = sem_open(SEM_NAME, 1);
+            printf("%d ---> Child process is starting\n", getpid());
 
-		    int kucuk,buffer,boyut,indis = 0;
-		    sayilar = (int*)malloc(k*sizeof(int));
-            sayilar[0] = 0;
-            sem_t *sem_id = sem_open(semName, 1);
-		    printf("%d ---> child process is starting\n",getpid());
+            FILE* file;
+            if (file = fopen(argv[3 + i], "r"))
+                printf("File reading successful\n");
+            else
+                printf("File cannot be read\n");
 
+            while (fscanf(file, "%d\n", &buffer) != EOF) {
+                mergeSort(numbers, 0, current_index);
+                reverse(numbers, 0, current_index);
 
-		    FILE *fp;
+                smallest = numbers[current_index];
 
-		    if(fp = fopen(argv[3+i],"r"))
-		        printf("Dosya okuma basarili\n");
-		    else
-		        printf("Dosya okunamadi\n");
+                if (buffer > smallest)
+                    numbers[current_index] = buffer;
 
-		    while(fscanf(fp,"%d\n",&buffer) != EOF){
+                if (current_index < k)
+                    current_index++;
+            }
 
-//                printf("i : %d - ",indis);printArray(sayilar,indis);printf("\n");
-  			    mergeSort(sayilar,0,indis);
-                tersinecevir(sayilar,0,indis);
-
-                kucuk = sayilar[indis];
-
-                if(buffer > kucuk)
-                    sayilar[indis] = buffer;
-
-	            if(indis < k)
-                    indis++;
-
-	        }
-
-//            printf("En buyuk k: ");
-//            printArray(sayilar,indis);
-            memcpy(shared_memory+(k*i),sayilar,indis*sizeof(int));
+            memcpy(shared_memory + (k * i), numbers, current_index * sizeof(int));
             sem_post(sem_id);
             exit(0);
-	    }
-
-        else{
+        } else {
             sem_wait(sem_id);
             wait(NULL);
-            memcpy(index,p,sizeof(int));
-            memcpy(dizi+index[0]*k,shared_memory+(k*index[0]),(k*n)*sizeof(int));
+            memcpy(index, index_memory, sizeof(int));
+            memcpy(array + index[0] * k, shared_memory + (k * index[0]), (k * n) * sizeof(int));
             index[0]++;
-            memcpy(p,index,sizeof(int));
-            printf("En son : ");
-            printArray(dizi,k*index[0]);
-
+            memcpy(index_memory, index, sizeof(int));
+            printf("Last: ");
+            printArray(array, k * index[0]);
         }
-    sem_post(&bitis);
-    sem_getvalue(&bitis,&aha);
+        sem_post(&finish_sem);
+        sem_getvalue(&finish_sem, &shared_index);
 
-    if(aha == n){
+        if (shared_index == n) {
+            mergeSort(array, 0, (k * index[0]) - 1);
+            reverse(array, 0, k * index[0] - 1);
 
-        mergeSort(dizi,0,(k*index[0])-1);
-        tersinecevir(dizi,0,k*index[0]-1);
-        //printArray(dizi,k*index[0]);
-        FILE *yaz;
-        yaz = fopen(argv[n+3],"w");
-            for(i = 0;i<k*index[0];i++)
-                fprintf(yaz,"%d\n",dizi[i]);
-        printf("\nProcessler bitti! parent process siralanmis diziyi %s dosyasina yazdi!\n",argv[n+3]);
-        exit(0);
-	}
-
-
+            FILE* write_file;
+            write_file = fopen(argv[n + 3], "w");
+            for (i = 0; i < k * index[0]; i++)
+                fprintf(write_file, "%d\n", array[i]);
+            printf("\nProcesses completed! Parent process wrote the sorted array to the %s file!\n", argv[n + 3]);
+            exit(0);
+        }
     }
 
-	return 0;
-
+    return 0;
 }
