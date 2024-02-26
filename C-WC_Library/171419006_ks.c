@@ -6,141 +6,98 @@
 #include <sys/wait.h>
 #include <time.h>
 
-int bilgi_say(char data_path[], int *satir_sum,int *kelime_sum, int *harf_sum){
-FILE* fp;
-int i;
-char satir;
-char kelime[10000];
-int counter_satir=0;
-int counter_kelime=0;
-int counter_karakter=-1;
+int count_info(char data_path[], int *line_sum, int *word_sum, int *char_sum) {
+    FILE* fp;
+    int i;
+    char line;
+    char word[10000];
+    int counter_line = 0;
+    int counter_word = 0;
+    int counter_char = -1;
 
+    if (1) {
+        if ((fp = fopen(data_path, "r")) == NULL) { // file is opened
+            printf("File not found\n");
+            return 1;
+        }
 
-if(1){
-	if((fp=fopen(data_path,"r")) == NULL){ //dosya açılıyor
-		printf("Dosya Bulunamadi\n");
-		return 1;	
-	}
-	
-	while(!feof(fp)){
-	// Satırı bul
-		satir=getc(fp);
-		if(satir=='\n'){
-			counter_satir++;
-		}
-	// Kelimeyi bul
-		
-		if(satir == ' ' || satir =='\n'){
-			counter_kelime++;
-		}
-		
-		
-	// Karakteri bul
-		if(satir != ' ' && satir !='\n'){
-			counter_karakter++;
+        while (!feof(fp)) {
+            // Find the line
+            line = getc(fp);
+            if (line == '\n') {
+                counter_line++;
+            }
+            // Find the word
+            if (line == ' ' || line == '\n') {
+                counter_word++;
+            }
+            // Find the character
+            if (line != ' ' && line != '\n') {
+                counter_char++;
+            }
+        }
 
-		}
-	}
-	*satir_sum=counter_satir;
-	*kelime_sum=counter_kelime;
-	*harf_sum=counter_karakter;
-	printf("Dosya Adi:%s . Satir = %d , Kelime = %d , Karakter = %d\n",data_path, counter_satir,counter_kelime,counter_karakter);
-	fclose(fp);
-	
-	
+        *line_sum = counter_line;
+        *word_sum = counter_word;
+        *char_sum = counter_char;
+        printf("File Name: %s. Line = %d, Word = %d, Character = %d\n", data_path, counter_line, counter_word, counter_char);
+        fclose(fp);
+    }
 }
 
+int create_random(char data_path[]) {
+    FILE* fp;
+    int i, j, k;
+    char text[] = "A";
+    srand(time(NULL));
+    int counter_line = rand() % 100;
+    int counter_char = rand() % 100;
+    int random = rand() % 35;
+    int line_sum, word_sum, char_sum;
 
+    if ((fp = fopen(data_path, "w+")) == NULL) { // file is opened
+        printf("File not found\n");
+        return 1;
+    }
+
+    for (i = 0; i < counter_line; i++) {
+        for (k = 0; k < counter_char; k++) {
+            fprintf(fp, "%s", text);
+            if (k % random == 0) {
+                fprintf(fp, "%s", " ");
+            }
+        }
+        fprintf(fp, "%s", "\n");
+    }
+
+    fclose(fp);
+    count_info(data_path, &line_sum, &word_sum, &char_sum);
 }
 
-int random_olustur(char data_path[]){
-FILE* fp;
-int i,j,k;
-char text[]="A";
-srand(time(NULL));
-int counter_satir=rand() % 100 ;
-int counter_karakter=rand() % 100;
-int random=rand()%35;
-int satir_sum,kelime_sum,harf_sum;
+// line word character 
+int main(int argc, char* argv[]) {
+    int line_sum, word_sum, char_sum;
+    char* randomize = "random.txt";
+    char* data_path = argv[1];
+    char* data_path_1 = argv[2];
+    int sum[2][3];
 
-if((fp=fopen(data_path,"w+")) == NULL){ //dosya açılıyor
-		printf("Dosya Bulunamadi\n");
-		return 1;	
-		}
+    if (argc == 2) { // Check the parameter received from the user
+        if (strcmp(data_path, randomize) != 0) {
+            count_info(data_path, &line_sum, &word_sum, &char_sum);
+        } else {
+            create_random(data_path);
+        }
+    } else if (argc == 3) { // Check the parameter received from the user
+        count_info(data_path, &line_sum, &word_sum, &char_sum);
+        sum[0][0] = line_sum;
+        sum[0][1] = word_sum;
+        sum[0][2] = char_sum;
+        count_info(data_path_1, &line_sum, &word_sum, &char_sum);
+        sum[1][0] = line_sum;
+        sum[1][1] = word_sum;
+        sum[1][2] = char_sum;
 
-for(i=0; i<counter_satir;i++){
-	
-		for(k=0;k<counter_karakter;k++){
-				
-				fprintf(fp,"%s",text);
-				if(k % random ==0){
-					
-					fprintf(fp,"%s"," ");
-				}
-			}
-		
-		fprintf(fp,"%s","\n");
-	
-
+        printf("SUMS: Line:%d , Word:%d, Character:%d\n", sum[0][0] + sum[1][0], sum[0][1] + sum[1][1], sum[0][2] + sum[1][2]);
+    }
 }
-	fclose(fp);
-	bilgi_say(data_path,&satir_sum,&kelime_sum,&harf_sum);
-		
-}
-
-
-
-// satır kelime karakter 
-int main (int argc, char * argv[])
-{	
-	int satir_sum,kelime_sum,harf_sum;
-	char *randomize ="random.txt";
-	char *data_path = argv[1];	
-	char *data_path_1 = argv[2];
-	int topla[2][3];
-		
-	if(argc==2){ //Kullanıcıdan alınan parametre kontrol ediliyor
-		if(strcmp(data_path,randomize)!=0){
-			bilgi_say(data_path,&satir_sum,&kelime_sum,&harf_sum);
-			
-		}
-		else{
-			random_olustur(data_path);
-		}
-		
-	}
-	
-	else if(argc==3){ //Kullanıcıdan alınan parametre kontrol ediliyor
-		
-		bilgi_say(data_path,&satir_sum,&kelime_sum,&harf_sum);
-		topla[0][0]=satir_sum;
-		topla[0][1]=kelime_sum;
-		topla[0][2]=harf_sum;
-		bilgi_say(data_path_1,&satir_sum,&kelime_sum,&harf_sum);
-		topla[1][0]=satir_sum;
-		topla[1][1]=kelime_sum;
-		topla[1][2]=harf_sum;
-		
-		printf("TOPLAMLARI: Satir:%d , Kelime:%d, Karakter:%d\n",topla[0][0]+topla[1][0],topla[0][1]+topla[1][1],topla[0][2]+topla[1][2]);
-	}
-	
-	
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
