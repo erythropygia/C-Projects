@@ -1,83 +1,76 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-void ilkkez(char girilen[], char aranan);
-void kackez(char girilen[], char aranan);
-void nerede(char girilen[], char aranan);
 
+void firstOccurrence(char input[], char search);
+void occurrenceCount(char input[], char search);
+void where(char input[], char search);
 
 int main(){
 	
-	char girilen[20];
-	char aranan;
-	printf("Lutfen String Kelime Giriniz:");
-	gets(girilen);
-    printf("Lutfen Stringde Aranacak Harf Giriniz:");
-	scanf("%c",&aranan);
-	ilkkez(girilen,aranan);
-	kackez(girilen,aranan);
-	nerede(girilen,aranan);
+	char input[20];
+	char search;
+	printf("Please Enter a String Word:");
+	gets(input);
+    printf("Please Enter the Letter to Search in the String:");
+	scanf("%c",&search);
+	firstOccurrence(input, search);
+	occurrenceCount(input, search);
+	where(input, search);
 	
-	
+	return 0;
 }
 
-void ilkkez(char girilen[], char aranan){
+void firstOccurrence(char input[], char search){
    int i=0;
-   int sayac=0;
+   int count=0;
    for(i=0;i<20;i++){
-   	if(girilen[i]==aranan){
-   		sayac++;
+   	if(input[i]==search){
+   		count++;
    		break;
 	   }
    }
-   if(sayac==0){
-   	printf("Dizide Aranan Harf Yoktur");
-   	return 0;
+   if(count==0){
+   	printf("The Searched Letter is Not in the Array");
+   	return;
    }
   
-   printf("String Dizide Aranan %c Harfine Ilk Olarak %d . Elemanda Rastlandi\n",aranan,i+1);
-   return 0;
+   printf("In the String, the Letter %c is First Encountered at Element %d\n", search, i+1);
+   return;
 }
-	
-	
 
-void kackez(char girilen[], char aranan){
+void occurrenceCount(char input[], char search){
 	int i=0;
-	int sayac=0;
+	int count=0;
 	for(i=0;i<20;i++){
-		if(girilen[i]==aranan){
-			sayac++;
+		if(input[i]==search){
+			count++;
 		}
 	}
-	if(sayac==0){
-		return 0;
+	if(count==0){
+		return;
 	}
-   printf("String Dizide Aranan %c Harfi %d Kez Tekrar Etmektedir\n",aranan,sayac);
-   return 0;
+   printf("In the String, the Letter %c Repeats %d Times\n", search, count);
+   return;
 }	
 
-void nerede(char girilen[], char aranan){
-	int i,a=0,sayac=0;
-	int nerede[20];
+void where(char input[], char search){
+	int i, a=0, count=0;
+	int position[20];
     for(i=0;i<20;i++){
-    	if(girilen[i]==aranan){
-    		sayac++;
-    		nerede[a]=i;
+    	if(input[i]==search){
+    		count++;
+    		position[a]=i;
     		a++;
 		}
 	}
 	
-	if(sayac==0){
-		
-		return 0;
+	if(count==0){
+		return;
 	}
-	printf("String Dizide Aranan %c Harfi String Metinde:",aranan);
+	printf("In the String, the Letter %c is Found in Positions:", search);
 	for(i=0;i<a;i++){
-		printf("%d  ",nerede[i]+1);
+		printf("%d  ", position[i]+1);
 	}
-	printf("Numarali Harflerde Bulunmaktadir");
+	printf("Numbered Letters\n");
 }
-
-	
-
-
